@@ -24,7 +24,7 @@
         
         <div style="height:18px"></div>
         <div class="chart"></div>
-        <div class="viewof-fixed" style=""></div>
+        <div style="height:18px" class="viewof-fixed" style=""></div>
         
         <script type="module">
             
@@ -41,7 +41,7 @@
             
             
             const main = runtime.module(define, name => {
-                                        if (name === "viewof fixed") return Inspector.into(".viewof-fixed")();
+                                        //if (name === "viewof fixed") return Inspector.into(".viewof-fixed")();
                                         if (name === "map") return Inspector.into(".chart")();
                                         return ["inertia","ended"].includes(name) || null;
                                         });

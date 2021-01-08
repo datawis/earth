@@ -1,7 +1,64 @@
+
 <!--suppress XmlUnboundNsPrefix -->
 <html>
-<body style="text-align:center">
-<iframe style="width:100vmin;height:100vmin" frameborder="0"
-  src="https://observablehq.com/embed/@datawis/draggable-equal-area-projections?cell=chart"></iframe>
-</body>
+    <head>
+    </head>
+    
+    <body style="text-align:center;display:flex;flex-flow:column;align-items:center;justify-content:center">
+        <style>
+        .chart {
+            width: 90vmin;
+            height: 90vmin;
+        }
+        </style>
+        
+        
+        <!-- By CSS, above, the chart element will fill half the height and half the
+         width of the window -->
+        <div class="chart"></div>
+        
+        <script type="module">
+            
+            import {Runtime, Inspector, Library} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+            import define from "https://api.observablehq.com/d/bb3606498c489132.js?v=3";
+            
+            // Create a modified version of the standard library where width is defined as a
+            // generator created by the resizer function below to watch the clientWidth of
+            // the chart
+            const chart = document.querySelector(".chart")
+            const stdlib = new Library;
+            const library = Object.assign({}, stdlib, {width: resizer(chart, "clientWidth")});
+            const runtime = new Runtime(library);
+            
+            
+            const main = runtime.module(define, name => {
+                                        if (name === "map") return Inspector.into(".chart")();
+                                        return ["inertia","ended"].includes(name) || null;
+                                        });
+                                        
+                                        // Redefine height to be a generator created by the resizer function below to
+                                        // watch the clientHeight of the chart. Note that height is defined differently
+                                        // because it is a cell (a variable) in the notebook, rather than part of the
+                                        // standard library
+                                        main.redefine("height", resizer(chart, "clientHeight"))
+                                        main.redefine("width", resizer(chart, "clientWidth"))
+                                        
+                                        // Rather than make separate generator functions for width and height, we've
+                                        // made a generalized generator "factory" function that watches the specified
+                                        // dimension of the specified element; e.g., the clientWidth or clientHeight of
+                                        // the chart
+                                        function resizer(element, dimension) {
+                                            return stdlib.Generators.observe(notify => {
+                                                                             let width = notify(element[dimension]);
+                                                                             const resized = () => {
+                                                                             let w = element[dimension];
+                                                                             if (w !== width) notify(width = w);
+                                                                             };
+                                                                             window.addEventListener("resize", resized);
+                                                                             return () => window.removeEventListener("resize", resized);
+                                                                             });
+                                        }
+        
+            </script>
+    </body>
 </html>
